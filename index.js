@@ -3,6 +3,8 @@ var winningWord = '';
 var currentRow = 1;
 var guess = '';
 var gamesPlayed = [];
+let words;
+
 
 // Query Selectors
 var inputs = document.querySelectorAll('input');
@@ -21,7 +23,13 @@ var gameOverGuessCount = document.querySelector('#game-over-guesses-count');
 var gameOverGuessGrammar = document.querySelector('#game-over-guesses-plural');
 
 // Event Listeners
-window.addEventListener('load', setGame);
+fetch("http://localhost:3001/api/v1/words")
+  .then(promise => promise.json())
+  .then(data => {
+    words = data;
+    setGame();
+  })
+  .catch(error => console.log(`Sorry, there was an error with ${error}`));
 
 for (var i = 0; i < inputs.length; i++) {
   inputs[i].addEventListener('keyup', function() { moveToNextInput(event) });
@@ -65,7 +73,6 @@ function updateInputPermissions() {
 
 function moveToNextInput(e) {
   var key = e.keyCode || e.charCode;
-
   if( key !== 8 && key !== 46 ) {
     var indexOfNext = parseInt(e.target.id.split('-')[2]) + 1;
     inputs[indexOfNext].focus();
