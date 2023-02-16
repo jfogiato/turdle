@@ -19,6 +19,8 @@ var letterKey = document.querySelector('#key-section');
 var rules = document.querySelector('#rules-section');
 var stats = document.querySelector('#stats-section');
 var gameOverBox = document.querySelector('#game-over-section');
+var gameOverMessage = document.getElementById('gameOverMessage')
+var gameOverInfoText = document.getElementById('informationalText');
 var gameOverGuessCount = document.querySelector('#game-over-guesses-count');
 var gameOverGuessGrammar = document.querySelector('#game-over-guesses-plural');
 
@@ -75,7 +77,9 @@ function moveToNextInput(e) {
   var key = e.keyCode || e.charCode;
   if( key !== 8 && key !== 46 ) {
     var indexOfNext = parseInt(e.target.id.split('-')[2]) + 1;
-    inputs[indexOfNext].focus();
+    indexOfNext === 30 
+    ? inputs[0].focus()
+    : inputs[indexOfNext].focus();
   }
 }
 
@@ -100,12 +104,14 @@ function submitGuess() {
     compareGuess();
     if (checkForWin()) {
       setTimeout(declareWinner, 1000);
+    } else if (currentRow === 6) {
+      setTimeout(declareWinner, 1000);
     } else {
       changeRow();
     }
   } else {
     errorMessage.innerText = 'Not a valid word. Try again!';
-  }
+  } 
 }
 
 function checkIsWord() {
@@ -180,13 +186,18 @@ function declareWinner() {
 }
 
 function recordGameStats() {
-  gamesPlayed.push({ solved: true, guesses: currentRow });
+  checkForWin() 
+  ? gamesPlayed.push({ solved: true, guesses: currentRow })
+  : gamesPlayed.push({ solved: false, guesses: 6 })
 }
 
 function changeGameOverText() {
   gameOverGuessCount.innerText = currentRow;
   if (currentRow < 2) {
     gameOverGuessGrammar.classList.add('collapsed');
+  } else if (currentRow === 6) {
+    gameOverMessage.innerText = 'DOH!'
+    gameOverInfoText.innerText = 'Wow you are super dumb. You used all 6 guesses and still didn\'t get the word. Better luck next time!';
   } else {
     gameOverGuessGrammar.classList.remove('collapsed');
   }
@@ -195,6 +206,7 @@ function changeGameOverText() {
 function startNewGame() {
   clearGameBoard();
   clearKey();
+  resetGameOverSection();
   setGame();
   viewGame();
   inputs[0].focus();
@@ -211,6 +223,11 @@ function clearKey() {
   for (var i = 0; i < keyLetters.length; i++) {
     keyLetters[i].classList.remove('correct-location-key', 'wrong-location-key', 'wrong-key');
   }
+}
+
+function resetGameOverSection() {
+  gameOverMessage.innerText = 'Yay!';
+  gameOverInfoText.innerText = 'You did it! It took you <span id="game-over-guesses-count">/some number/</span> guess<span id="game-over-guesses-plural">es</span> to find the correct word.';
 }
 
 // Change Page View Functions
