@@ -14,6 +14,9 @@ var errorMessage = document.querySelector('#error-message');
 var viewRulesButton = document.querySelector('#rules-button');
 var viewGameButton = document.querySelector('#play-button');
 var viewStatsButton = document.querySelector('#stats-button');
+var totalGamesStat = document.getElementById('statsTotalGames');
+var percentCorrectStat = document.getElementById('statsPercentCorrect');
+var averageGuessesStat = document.getElementById('statsAverageGuesses');
 var gameBoard = document.querySelector('#game-section');
 var letterKey = document.querySelector('#key-section');
 var rules = document.querySelector('#rules-section');
@@ -189,24 +192,39 @@ function recordGameStats() {
   checkForWin() 
   ? gamesPlayed.push({ solved: true, guesses: currentRow })
   : gamesPlayed.push({ solved: false, guesses: 6 })
+  updateStatsPage();
 }
 
+function updateStatsPage() {
+  let totalGames = gamesPlayed.length;
+  let gamesWon = gamesPlayed.filter(game => game.solved);
+  let gamesWonGuesses = gamesWon.reduce((acc, game) => {
+    acc += game.guesses;
+    return acc;
+  }, 0);
+  totalGamesStat.innerText = totalGames;
+  percentCorrectStat.innerText = Math.round((gamesWon.length / totalGames) * 100);
+  averageGuessesStat.innerText = gamesWonGuesses / gamesWon.length;
+}
+
+
+
 function changeGameOverText() {
-  gameOverGuessCount.innerText = currentRow;
-  if (currentRow < 2) {
-    gameOverGuessGrammar.classList.add('collapsed');
-  } else if (currentRow === 6) {
-    gameOverMessage.innerText = 'DOH!'
-    gameOverInfoText.innerText = 'Wow you are super dumb. You used all 6 guesses and still didn\'t get the word. Better luck next time!';
+  if (checkForWin()) {
+    let grammar = currentRow < 2 ? 'guess' : 'guesses';
+    gameOverBox.innerHTML = `
+    <h3 id="gameOverMessage">Yay!</h1>
+    <p class="informational-text" id="informationalText">You did it! It took you ${currentRow} ${grammar} to find the correct word.</p>`
   } else {
-    gameOverGuessGrammar.classList.remove('collapsed');
+    gameOverBox.innerHTML = `
+    <h3 id="gameOverMessage">DOH!</h1>
+    <p class="informational-text" id="informationalText">Wow you are super dumb. You used all 6 guesses and still didn\'t get the word. Better luck next time!</p>`
   }
 }
 
 function startNewGame() {
   clearGameBoard();
   clearKey();
-  resetGameOverSection();
   setGame();
   viewGame();
   inputs[0].focus();
@@ -223,11 +241,6 @@ function clearKey() {
   for (var i = 0; i < keyLetters.length; i++) {
     keyLetters[i].classList.remove('correct-location-key', 'wrong-location-key', 'wrong-key');
   }
-}
-
-function resetGameOverSection() {
-  gameOverMessage.innerText = 'Yay!';
-  gameOverInfoText.innerText = 'You did it! It took you <span id="game-over-guesses-count">/some number/</span> guess<span id="game-over-guesses-plural">es</span> to find the correct word.';
 }
 
 // Change Page View Functions
